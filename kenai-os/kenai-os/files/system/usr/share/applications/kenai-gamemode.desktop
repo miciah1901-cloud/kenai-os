@@ -1,8 +1,0 @@
-[Desktop Entry]
-Type=Application
-Name=Game Mode
-Comment=Go back to Steam Gaming Mode
-Exec=sh -c "steamos-session-select gamescope || notify-send 'Game Mode' 'Use the Return to Gaming Mode shortcut on the desktop.'"
-Icon=kenai-gamemode
-Terminal=false
-Categories=Game;

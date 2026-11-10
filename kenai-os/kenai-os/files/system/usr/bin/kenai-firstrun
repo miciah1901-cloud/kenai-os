@@ -1,7 +1,0 @@
-#!/usr/bin/bash
-# Runs once per user at the first Desktop Mode login and applies the Kenai look.
-marker="$HOME/.config/kenai/theme-applied"
-[[ -f "$marker" ]] && exit 0
-[[ "${XDG_CURRENT_DESKTOP:-}" == *KDE* ]] || exit 0
-sleep 8   # let Plasma finish starting
-/usr/bin/kenai-theme && mkdir -p "$(dirname "$marker")" && touch "$marker"
