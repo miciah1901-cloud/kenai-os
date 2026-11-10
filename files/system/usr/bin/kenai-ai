@@ -1,0 +1,9 @@
+#!/usr/bin/bash
+# Kenai AI: Claude and Gemini tabs (they can read and change your setup),
+# plus Odysseus (local, private) — opened in one Kenai-themed terminal.
+export PATH="$HOME/.local/bin:/home/linuxbrew/.linuxbrew/bin:$PATH"
+
+if ! command -v claude >/dev/null && ! command -v gemini >/dev/null; then
+  exec konsole --profile Kenai -e /usr/bin/kenai-ai-setup
+fi
+exec konsole --profile Kenai --tabs-from-file /usr/share/kenai/ai-tabs

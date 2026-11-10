@@ -1,0 +1,21 @@
+#!/usr/bin/bash
+# Runs one Kenai AI assistant in a tab, then leaves a shell open in that tab.
+export PATH="$HOME/.local/bin:/home/linuxbrew/.linuxbrew/bin:$PATH"
+cd "$HOME" || exit 1
+
+case "${1:-}" in
+  claude)
+    if command -v claude >/dev/null; then claude
+    else echo "Claude Code isn't installed yet. Run: kenai-ai-setup"; fi ;;
+  gemini)
+    if command -v gemini >/dev/null; then gemini
+    else echo "Gemini CLI isn't installed yet. Run: kenai-ai-setup"; fi ;;
+  odysseus)
+    if [[ -d "$HOME/.local/share/kenai/odysseus" ]]; then
+      /usr/bin/kenai-odysseus open
+      echo "Odysseus is open in your browser at http://127.0.0.1:7000"
+    else
+      echo "Odysseus isn't installed yet. Run: kenai-odysseus install"
+    fi ;;
+esac
+exec bash -l

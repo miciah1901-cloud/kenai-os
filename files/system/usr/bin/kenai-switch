@@ -1,0 +1,158 @@
+#!/usr/bin/python3
+"""Kenai Switch (Kenai OS side).
+
+Fullscreen, controller-first screen that restarts the PC into Windows for one
+boot. A = restart (3-second countdown, B cancels), B = close.
+Keyboard: Enter / Esc. Mouse: left click / right click.
+"""
+import os
+import subprocess
+import sys
+import time
+
+os.environ.setdefault("SDL_VIDEO_MINIMIZE_ON_FOCUS_LOSS", "0")
+import pygame  # noqa: E402
+
+ASSETS = "/usr/share/kenai/switch"
+HELPER = "/usr/bin/kenai-reboot-windows"
+COUNTDOWN = 3.0
+INPUT_GUARD = 0.4      # ignore the button press that launched us
+DEBOUNCE = 0.25        # one press can arrive as controller + joystick event
+ACCENT = (255, 90, 72)
+
+
+def windows_entry_found() -> bool:
+    try:
+        out = subprocess.run(["efibootmgr"], capture_output=True, text=True, timeout=5).stdout
+    except Exception:
+        return False
+    return "windows boot manager" in out.lower()
+
+
+def fit(img, size):
+    """Scale to cover the screen height/width while keeping aspect; letterbox."""
+    sw, sh = size
+    iw, ih = img.get_size()
+    scale = min(sw / iw, sh / ih)
+    w, h = int(iw * scale), int(ih * scale)
+    return pygame.transform.smoothscale(img, (w, h)), ((sw - w) // 2, (sh - h) // 2, w, h)
+
+
+def main() -> int:
+    pygame.init()
+    pygame.display.set_caption("Kenai Switch")
+    screen = pygame.display.set_mode((0, 0), pygame.FULLSCREEN)
+    pygame.mouse.set_visible(False)
+    size = screen.get_size()
+
+    # Controllers: prefer SDL's GameController layer (consistent A/B on any pad).
+    pads = []
+    use_gc = False
+    try:
+        from pygame._sdl2 import controller as gc
+        gc.init()
+        for i in range(gc.get_count()):
+            if gc.is_controller(i):
+                pads.append(gc.Controller(i))
+        use_gc = True
+    except Exception:
+        pass
+    pygame.joystick.init()
+    for i in range(pygame.joystick.get_count()):
+        try:
+            pads.append(pygame.joystick.Joystick(i))
+        except Exception:
+            pass
+
+    main_img, rect = fit(pygame.image.load(f"{ASSETS}/from-kenai.png").convert(), size)
+    rest_img, _ = fit(pygame.image.load(f"{ASSETS}/from-kenai-restart.png").convert(), size)
+    font = pygame.font.Font(None, max(28, size[1] // 30))
+
+    state = "main" if windows_entry_found() else "missing"
+    started = time.monotonic()
+    last = {"A": 0.0, "B": 0.0}
+    t0 = 0.0
+    error = ""
+    clock = pygame.time.Clock()
+
+    def press(action):
+        now = time.monotonic()
+        if now - started < INPUT_GUARD or now - last[action] < DEBOUNCE:
+            return None
+        last[action] = now
+        return action
+
+    while True:
+        action = None
+        for ev in pygame.event.get():
+            if ev.type == pygame.QUIT:
+                return 0
+            if ev.type == pygame.KEYDOWN:
+                if ev.key in (pygame.K_RETURN, pygame.K_KP_ENTER, pygame.K_SPACE):
+                    action = press("A")
+                elif ev.key in (pygame.K_ESCAPE, pygame.K_BACKSPACE):
+                    action = press("B")
+            elif ev.type == pygame.MOUSEBUTTONDOWN:
+                action = press("A" if ev.button == 1 else "B")
+            elif use_gc and ev.type == pygame.CONTROLLERBUTTONDOWN:
+                if ev.button == pygame.CONTROLLER_BUTTON_A:
+                    action = press("A")
+                elif ev.button == pygame.CONTROLLER_BUTTON_B:
+                    action = press("B")
+            elif ev.type == pygame.JOYBUTTONDOWN:
+                if ev.button == 0:
+                    action = press("A")
+                elif ev.button == 1:
+                    action = press("B")
+
+        if state == "missing":
+            if action:
+                return 1
+        elif state == "main":
+            if action == "A":
+                state, t0 = "restart", time.monotonic()
+            elif action == "B":
+                return 0
+        elif state == "restart":
+            if action == "B":
+                state = "main"
+            elif time.monotonic() - t0 >= COUNTDOWN:
+                result = subprocess.run(["sudo", "-n", HELPER], capture_output=True, text=True)
+                if result.returncode == 0:
+                    state = "rebooting"
+                else:
+                    error = (result.stderr.strip() or "Restart failed.").splitlines()[-1]
+                    state = "error"
+        elif state == "error":
+            if action:
+                return 1
+
+        screen.fill((0, 0, 0))
+        x, y, w, h = rect
+        if state in ("restart", "rebooting"):
+            screen.blit(rest_img, (x, y))
+            p = 1.0 if state == "rebooting" else min(1.0, (time.monotonic() - t0) / COUNTDOWN)
+            bw, bh = int(w * 0.30), max(6, h // 135)
+            bx, by = x + (w - bw) // 2, y + int(h * 0.56)
+            pygame.draw.rect(screen, (60, 30, 32), (bx, by, bw, bh), border_radius=bh // 2)
+            pygame.draw.rect(screen, ACCENT, (bx, by, int(bw * p), bh), border_radius=bh // 2)
+        else:
+            screen.blit(main_img, (x, y))
+            msg = ""
+            if state == "missing":
+                msg = "Windows wasn't found in the boot menu. Press any button to close."
+            elif state == "error":
+                msg = f"{error}  Press any button to close."
+            if msg:
+                surf = font.render(msg, True, (255, 241, 236))
+                pad = surf.get_height() // 2
+                box = pygame.Rect(0, 0, surf.get_width() + pad * 4, surf.get_height() + pad * 2)
+                box.center = (x + w // 2, y + int(h * 0.86))
+                pygame.draw.rect(screen, (120, 18, 24), box, border_radius=pad)
+                screen.blit(surf, surf.get_rect(center=box.center))
+        pygame.display.flip()
+        clock.tick(60)
+
+
+if __name__ == "__main__":
+    sys.exit(main())

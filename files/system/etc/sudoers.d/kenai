@@ -1,0 +1,4 @@
+# Kenai Switch: let admin users restart into Windows without a password
+# prompt, so it works from Game Mode with only a controller.
+# Only this one script is allowed.
+%wheel ALL=(root) NOPASSWD: /usr/bin/kenai-reboot-windows

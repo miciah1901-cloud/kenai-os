@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" width="200" height="200">
+<circle cx="52" cy="50" r="27" fill="#ff5a48" fill-opacity=".9"/><circle cx="148" cy="50" r="27" fill="#ff5a48" fill-opacity=".75"/>
+<circle cx="52" cy="50" r="12" fill="#14040a" fill-opacity=".55"/><circle cx="148" cy="50" r="12" fill="#14040a" fill-opacity=".55"/>
+<polygon points="100,30 52,46 24,98 40,150 100,182 160,150 176,98 148,46" fill="#14040a"/>
+<polygon points="100,30 52,46 100,102" fill="#ff5a48" fill-opacity="1"/><polygon points="100,30 148,46 100,102" fill="#ff5a48" fill-opacity="0.8"/><polygon points="52,46 24,98 100,102" fill="#ff5a48" fill-opacity="0.85"/><polygon points="148,46 176,98 100,102" fill="#ff5a48" fill-opacity="0.62"/>
+<polygon points="24,98 40,150 100,102" fill="#ff5a48" fill-opacity="0.7"/><polygon points="176,98 160,150 100,102" fill="#ff5a48" fill-opacity="0.5"/><polygon points="40,150 100,182 100,102" fill="#ff5a48" fill-opacity="0.58"/><polygon points="160,150 100,182 100,102" fill="#ff5a48" fill-opacity="0.42"/>
+<polygon points="100,112 132,134 122,162 100,170 78,162 68,134" fill="#fff1ec" fill-opacity=".95"/><polygon points="100,112 132,134 100,140" fill="#ffffff"/>
+<polygon points="86,130 114,130 100,146" fill="#14040a"/><polygon points="66,94 80,88 84,100 70,104" fill="#14040a"/><polygon points="134,94 120,88 116,100 130,104" fill="#14040a"/>
+</svg>

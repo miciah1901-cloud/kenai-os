@@ -1,0 +1,24 @@
+#!/usr/bin/bash
+# Snapshot the desktop/layout settings so any change can be undone.
+# Usage: kenai-backup [label]      Undo with: kenai-undo
+set -uo pipefail
+label=$(printf '%s' "${1:-manual}" | tr -c 'A-Za-z0-9._-' '-' | cut -c1-40)
+root="$HOME/.config/kenai-backups"
+dest="$root/$(date +%Y%m%d-%H%M%S)-$label"
+mkdir -p "$dest"
+
+files=(
+  plasma-org.kde.plasma.desktop-appletsrc plasmashellrc plasmarc kdeglobals kwinrc
+  kwinrulesrc kglobalshortcutsrc khotkeysrc konsolerc kscreenlockerrc ksplashrc
+  dolphinrc systemsettingsrc fastfetch/config.jsonc
+)
+for f in "${files[@]}"; do
+  if [[ -e "$HOME/.config/$f" ]]; then
+    mkdir -p "$dest/$(dirname "$f")"
+    cp -a "$HOME/.config/$f" "$dest/$f"
+  fi
+done
+
+# Keep the 30 newest backups
+ls -1dt "$root"/*/ 2>/dev/null | tail -n +31 | xargs -r rm -rf
+echo "$dest"
