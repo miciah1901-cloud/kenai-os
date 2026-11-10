@@ -1,0 +1,47 @@
+// Kenai OS boot splash: pulsing glowing logo.
+Window.SetBackgroundTopColor(0.0, 0.0, 0.0);
+Window.SetBackgroundBottomColor(0.04, 0.0, 0.01);
+
+W = Window.GetWidth();
+H = Window.GetHeight();
+
+logo.image = Image("logo.png");
+scale = (H * 0.40) / logo.image.GetHeight();
+if (scale > 1.5) scale = 1.5;
+logo.image = logo.image.Scale(logo.image.GetWidth() * scale, logo.image.GetHeight() * scale);
+logo.sprite = Sprite(logo.image);
+logo.sprite.SetX(W / 2 - logo.image.GetWidth() / 2);
+logo.sprite.SetY(H * 0.42 - logo.image.GetHeight() / 2);
+
+pulse = 0;
+
+fun refresh_callback () {
+  pulse = pulse + 1;
+  o = 0.55 + 0.45 * Math.Sin(pulse / 18);
+  logo.sprite.SetOpacity(o);
+}
+Plymouth.SetRefreshFunction(refresh_callback);
+
+// Disk-encryption password prompt (only used if the drive is encrypted)
+fun display_password_callback (prompt, bullets) {
+  stars = "";
+  for (i = 0; i < bullets; i = i + 1) stars = stars + "*";
+  msg.image = Image.Text(prompt + "  " + stars, 1, 0.94, 0.92);
+  msg.sprite = Sprite(msg.image);
+  msg.sprite.SetX(W / 2 - msg.image.GetWidth() / 2);
+  msg.sprite.SetY(H * 0.78);
+}
+Plymouth.SetDisplayPasswordFunction(display_password_callback);
+
+fun display_normal_callback () {
+  msg.sprite = Sprite();
+}
+Plymouth.SetDisplayNormalFunction(display_normal_callback);
+
+fun message_callback (text) {
+  note.image = Image.Text(text, 0.8, 0.7, 0.68);
+  note.sprite = Sprite(note.image);
+  note.sprite.SetX(W / 2 - note.image.GetWidth() / 2);
+  note.sprite.SetY(H * 0.88);
+}
+Plymouth.SetMessageFunction(message_callback);

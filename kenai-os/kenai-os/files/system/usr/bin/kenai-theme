@@ -1,0 +1,32 @@
+#!/usr/bin/bash
+# Apply the Kenai Ember look to the current user's desktop.
+# Safe to re-run. Backs up the current setup first (undo: kenai-undo).
+set -uo pipefail
+
+KW=$(command -v kwriteconfig6 || command -v kwriteconfig5)
+QDBUS=$(command -v qdbus6 || command -v qdbus-qt6 || command -v qdbus)
+WALL=/usr/share/wallpapers/KenaiEmber/contents/images/3840x2160.png
+
+/usr/bin/kenai-backup "before-kenai-theme" >/dev/null
+
+# Colors, icons, wallpaper, lock screen
+plasma-apply-colorscheme KenaiEmber >/dev/null 2>&1
+"$KW" --file kdeglobals --group Icons --key Theme Kenai
+plasma-apply-wallpaperimage "$WALL" >/dev/null 2>&1
+"$KW" --file kscreenlockerrc --group Greeter --group Wallpaper --group org.kde.image --group General --key Image "file://$WALL"
+
+# Terminal profile + fastfetch
+"$KW" --file konsolerc --group "Desktop Entry" --key DefaultProfile Kenai.profile
+mkdir -p "$HOME/.config/fastfetch"
+[[ -f "$HOME/.config/fastfetch/config.jsonc" ]] || cp /usr/share/kenai/fastfetch.jsonc "$HOME/.config/fastfetch/config.jsonc"
+
+# Super+Space opens Kenai AI (takes effect after next login)
+"$KW" --file kglobalshortcutsrc --group services --group kenai-ai.desktop --key _launch "Meta+Space"
+
+# Dock + desktop widgets
+if [[ -n "$QDBUS" ]]; then
+    "$QDBUS" org.kde.plasmashell /PlasmaShell org.kde.PlasmaShell.evaluateScript \
+        "$(cat /usr/share/kenai/plasma-layout.js)" >/dev/null 2>&1 || true
+fi
+
+notify-send -i kenai-logo "Kenai OS" "Ember theme applied. Run 'kenai-undo' to go back." 2>/dev/null || true

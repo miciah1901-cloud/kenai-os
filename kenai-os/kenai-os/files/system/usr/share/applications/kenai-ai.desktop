@@ -1,0 +1,10 @@
+[Desktop Entry]
+Type=Application
+Name=Kenai AI
+GenericName=AI assistant
+Comment=Claude, Gemini and Odysseus — troubleshoot and change your setup
+Exec=/usr/bin/kenai-ai
+Icon=kenai-ai
+Terminal=false
+Categories=Utility;
+Keywords=claude;gemini;odysseus;ai;help;

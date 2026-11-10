@@ -1,0 +1,8 @@
+[Plymouth Theme]
+Name=Kenai OS
+Description=Kenai OS boot splash
+ModuleName=script
+
+[script]
+ImageDir=/usr/share/plymouth/themes/kenai
+ScriptFile=/usr/share/plymouth/themes/kenai/kenai.script

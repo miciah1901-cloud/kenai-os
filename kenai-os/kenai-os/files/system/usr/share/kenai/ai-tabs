@@ -1,0 +1,3 @@
+title: Claude;; command: /usr/bin/kenai-ai-run claude
+title: Gemini;; command: /usr/bin/kenai-ai-run gemini
+title: Odysseus;; command: /usr/bin/kenai-ai-run odysseus

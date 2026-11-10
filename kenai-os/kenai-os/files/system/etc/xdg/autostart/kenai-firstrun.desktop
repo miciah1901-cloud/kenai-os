@@ -1,0 +1,7 @@
+[Desktop Entry]
+Type=Application
+Name=Kenai first-run theme
+Exec=/usr/bin/kenai-firstrun
+OnlyShowIn=KDE;
+NoDisplay=true
+X-KDE-autostart-phase=2

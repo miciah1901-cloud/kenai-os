@@ -1,0 +1,64 @@
+# yaml-language-server: $schema=https://schema.blue-build.org/recipe-v1.json
+# Kenai OS (NVIDIA Open) — couch-gaming build for the current PC.
+# Published to ghcr.io/<your-github-username>/kenai-os
+#
+# Adding the AMD Steam Machine version later:
+#   copy this file to recipes/recipe-amd.yml, change `name` to kenai-os-amd and
+#   `base-image` to ghcr.io/ublue-os/bazzite-deck, then add recipe-amd.yml to the
+#   `recipe:` list in .github/workflows/build.yml. Everything else is shared.
+name: kenai-os
+description: Kenai OS — Bazzite Deck (NVIDIA Open) with the Ember theme, Kenai Switch and Kenai AI.
+
+base-image: ghcr.io/ublue-os/bazzite-deck-nvidia-open   # Bazzite's supported NVIDIA flavor for RTX 16xx and newer
+image-version: stable
+
+modules:
+  # Theme, icons, wallpaper, boot splash, Kenai apps and their sudo rule.
+  - type: files
+    files:
+      - source: system
+        destination: /
+
+  # Packages from Fedora's repos:
+  #   papirus-icon-theme -> base icon set the Kenai icons sit on top of
+  #   python3-pygame     -> controller input + fullscreen UI for Kenai Switch
+  #   tmux               -> needed by Odysseus for background model downloads
+  - type: dnf
+    install:
+      packages:
+        - papirus-icon-theme
+        - python3-pygame
+        - tmux
+
+  # Permissions (the GitHub website upload drops the executable bit).
+  - type: script
+    snippets:
+      - chmod 0755 /usr/bin/kenai-*
+      - chmod 0440 /etc/sudoers.d/kenai
+      - gtk-update-icon-cache -f /usr/share/icons/Kenai || true
+
+  # `ujust kenai-*` commands (files/justfiles/kenai.just).
+  - type: justfiles
+    include:
+      - kenai.just
+
+  # Apps installed for you on first login. Bazzite already ships Steam,
+  # Lutris, Firefox, MangoHud and Decky support.
+  - type: default-flatpaks
+    configurations:
+      - notify: true
+        scope: user
+        install:
+          - com.heroicgameslauncher.hgl   # Epic / GOG / Amazon games
+          - net.davidotek.pupgui2         # ProtonUp-Qt: GE-Proton
+          - com.discordapp.Discord
+          - com.github.tchx84.Flatseal
+
+  # OS name. ID stays Bazzite's so updates and tooling keep working.
+  - type: os-release
+    properties:
+      NAME: Kenai OS
+      PRETTY_NAME: Kenai OS (Bazzite Deck NVIDIA Open)
+      HOME_URL: https://itzkenaii.com
+
+  - type: signing

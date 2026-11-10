@@ -1,0 +1,18 @@
+#!/usr/bin/bash
+# Restart straight into Windows for the next boot only.
+# Runs as root (Kenai Switch calls it through sudo; see /etc/sudoers.d/kenai).
+set -euo pipefail
+
+if [[ $EUID -ne 0 ]]; then
+    exec sudo -n /usr/bin/kenai-reboot-windows "$@"
+fi
+
+entry=$(efibootmgr | grep -i 'Windows Boot Manager' | head -n1 | sed -E 's/^Boot([0-9A-Fa-f]{4}).*/\1/' || true)
+
+if [[ ! "${entry}" =~ ^[0-9A-Fa-f]{4}$ ]]; then
+    echo "Windows Boot Manager isn't in the UEFI boot list." >&2
+    exit 1
+fi
+
+efibootmgr --bootnext "${entry}" >/dev/null
+systemctl reboot
