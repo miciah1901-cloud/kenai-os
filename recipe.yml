@@ -9,7 +9,7 @@
 name: kenai-os
 description: Kenai OS — Bazzite Deck (NVIDIA Open) with the Ember theme, Kenai Switch and Kenai AI.
 
-base-image: ghcr.io/ublue-os/bazzite-deck-nvidia-open   # Bazzite's supported NVIDIA flavor for RTX 16xx and newer
+base-image: ghcr.io/ublue-os/bazzite-deck-nvidia   # Bazzite's supported NVIDIA flavor for RTX 16xx and newer
 image-version: stable
 
 modules:
